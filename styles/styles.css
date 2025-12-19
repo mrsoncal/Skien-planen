@@ -15,6 +15,9 @@ header, footer {
     color: #fff;
     padding: 1rem;
 }
+footer {
+    margin-top: 1rem;
+}
 header div {
     max-width:900px;
     margin:0 auto;
@@ -35,8 +38,11 @@ a {
     color: #ffd; 
     color:rgba(255,255,255,.9);
     text-decoration:none;
-    margin-left:1rem;
 }
+
+/* Only add spacing between header nav links; inline links should not have left margin */
+header nav a + a { margin-left: 1rem; }
+header nav a:first-child { margin-left: 0; }
 
 /* Highlight the current page link in the header nav */
 header nav a[aria-current="page"] {
@@ -47,6 +53,10 @@ header nav a[aria-current="page"] {
     font-weight: 600;
     box-shadow: 0 1px 0 rgba(0,0,0,0.04) inset;
 }
+
+/* Inline links in content (highlightable and clickable) */
+.inline-link { color: var(--accent); text-decoration: none; font-weight: 600; border-bottom: 1px solid transparent; }
+.inline-link:hover, .inline-link:focus-visible { background: rgba(var(--accent-rgb),0.06); border-bottom-color: var(--accent); outline: none; }
 .container { 
     display: grid; 
     gap: 1rem; 

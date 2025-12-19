@@ -140,17 +140,22 @@
             if (!newZ) return;
             var oldZ = zoom;
             newZ = clamp(newZ, minZoom, maxZoom);
-            // scale pan so current focal stays approximately under same point
-            if (focal && typeof focal.x === 'number') {
-                // focal is in view coordinates e.g. {x, y}
+            // scale pan so the focal point stays approximately under the same point.
+            // If no focal is provided (e.g. slider changes), default to the view center
+            // so zoom/scale appears to be centered rather than anchored to top-left.
+            try {
+                if (!focal || typeof focal.x !== 'number') {
+                    var rect = view.getBoundingClientRect();
+                    focal = { x: Math.round(rect.width / 2), y: Math.round(rect.height / 2) };
+                }
                 // compute focal in content coords and adjust pan to keep focal stable
                 var fx = focal.x + panX;
                 var fy = focal.y + panY;
                 var scale = newZ / oldZ;
                 panX = Math.round(fx * scale - focal.x);
                 panY = Math.round(fy * scale - focal.y);
-            } else {
-                // proportional scaling
+            } catch (err) {
+                // fallback proportional scaling if view metrics are unavailable
                 panX = Math.round(panX * (newZ / oldZ));
                 panY = Math.round(panY * (newZ / oldZ));
             }
