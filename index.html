@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Default index page" />
+    <title>Index - Skien Planen</title>
+
+    <!-- Basic styles -->
+    <link rel="stylesheet" href="styles/styles.css" />
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Skien Planen</h1>
+            <nav aria-label="Primary">
+                <a href="index.html">Hjem</a>
+                <a href="pages/infrastruktur.html">Infrastruktur</a>
+                <a href="pages/kollektivtransport.html">Kollektivtransport</a>
+                <a href="pages/moteplasser.html">Møteplasser</a>
+                <a href="pages/arkitektur.html">Arkitektur</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="hero" aria-labelledby="welcome-title">
+                <h2 id="welcome-title">Welcome</h2>
+                <p>This is a default index.html. Replace this content with your site. Edit the title, meta, styles and scripts as needed.</p>
+                <p><small>File location: /C:/Users/mrson/Documents/Skien-planen/index.html</small></p>
+            </section>
+            <section class="hero">
+                <h2>Interaktivt kart</h2>
+                <p>Trykk på noen av endringene for å se foreslåtte tiltak</p>
+
+                <!-- Before / After image slider -->
+                <div class="ba-container" aria-labelledby="ba-label">
+                    <p id="ba-label" class="visually-hidden">Før og etter kart - dra slideren for å sammenligne</p>
+                    <div class="ba-view" id="baView">
+                        <!-- Before image: prefer PNG (Skien_sentrum_before.png) with SVG fallback -->
+                        <picture class="ba-layer ba-before-layer">
+                            <div class="ba-content">
+                                <source srcset="images/Skien_sentrum_before.png" type="image/png">
+                                <img src="images/Skien_sentrum_before.png" alt="Kart, før" class="ba-image ba-before-img" draggable="false" />
+                            </div>
+                        </picture>
+
+                        <!-- After stack: prefer PNG (Skien_sentrum_after.png) and an empty SVG overlay for interactive elements -->
+                        <div id="baAfterStack" class="ba-layer ba-after-stack">
+                            <div class="ba-content">
+                                <picture>
+                                    <source srcset="images/Skien_sentrum_after.png" type="image/png">
+                                    <img src="images/Skien_sentrum_after.png" alt="Kart, etter" class="ba-image ba-after-img" draggable="false" />
+                                </picture>
+                                <svg id="baOverlay" class="ba-overlay" xmlns="http://www.w3.org/2000/svg" aria-hidden="false" focusable="true"></svg>
+                            </div>
+                        </div>
+
+                        <!-- Divider line and handle placed at clip position -->
+                        <div id="baDivider" class="ba-divider" style="left:50%;">
+                            <button id="baHandle" class="ba-handle" role="slider" aria-label="Før/Etter håndtak" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0"></button>
+                        </div>
+
+                        <!-- Zoom controls (zoom inside bounding box) -->
+                        <div class="ba-zoom-controls" aria-hidden="false">
+                            <div class="ba-zoom-display" aria-hidden="true"><span id="baZoomValue">100%</span></div>
+                            <input id="baZoomRange" class="ba-zoom-range" type="range" min="50" max="300" step="10" value="100" aria-label="Zoomnivå" />
+                        </div>
+                    </div>
+
+                    <!-- right-side area for explanations / legends -->
+                    <aside class="ba-explain" aria-label="Forklaring">
+                        <ul class="ba-legend" aria-hidden="false">
+                            <li><span class="swatch" style="background:#fec300" aria-hidden="true"></span><span class="label">buss-felt/gate</span></li>
+                            <li><span class="swatch" style="background:#bc34e5" aria-hidden="true"></span><span class="label">gågate</span></li>
+                            <li><span class="swatch" style="background:#e1c1ed" aria-hidden="true"></span><span class="label">byrom/torg/park</span></li>
+                            <li><span class="swatch" style="background:#349ee5" aria-hidden="true"></span><span class="label">Parkering</span></li>
+                            <li>
+                                <span class="swatch double">
+                                    <span class="part" style="background:#ff0000" aria-hidden="true"></span>
+                                    <span class="part" style="background:#ffa3a3" aria-hidden="true"></span>
+                                </span>
+                                <span class="label">Toglinje</span>
+                            </li>
+                            <li><span class="swatch" style="background:#8e8e8e" aria-hidden="true"></span><span class="label">Vei</span></li>
+                        </ul>
+                    </aside>
+
+                    <!-- slider removed; the divider handle is the only control now -->
+                </div>
+
+                <!-- NOTE: later the "after" image can be replaced by an interactive CSV-driven rendering. -->
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div style="max-width:900px;margin:0 auto;text-align:center;">
+            <small>&copy; <span id="year"></span> Skien Planen</small>
+        </div>
+    </footer>
+
+    <script src="js/beforeAfter.js"></script>
+    <script src="js/currentYear.js"></script>
+</body>
+</html>

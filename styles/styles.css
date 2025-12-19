@@ -1,0 +1,238 @@
+:root {
+    /* Theme variables */
+    --accent: #ff0808;
+    --accent-rgb: 255,8,8; /* useful for rgba() with variable */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    line-height: 1.5;
+}
+body { 
+    margin: 0; 
+    color: #111; 
+    background: #f8f9fb; 
+}
+header, footer {
+    background: var(--accent);
+    color: #fff;
+    padding: 1rem;
+}
+header div {
+    max-width:900px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+header h1 {
+    font-size:1.125rem;
+    margin:0;
+}
+main { 
+    padding: 2rem; 
+    max-width: 900px; 
+    margin: 0 auto; 
+}
+a { 
+    color: #ffd; 
+    color:rgba(255,255,255,.9);
+    text-decoration:none;
+    margin-left:1rem;
+}
+
+/* Highlight the current page link in the header nav */
+header nav a[aria-current="page"] {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+    padding: .25rem .5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04) inset;
+}
+.container { 
+    display: grid; 
+    gap: 1rem; 
+}
+.hero { 
+    background: #fff; 
+    padding: 1.25rem; 
+    border-radius: 8px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,.06); 
+}
+
+/* Before/After slider styles */
+.visually-hidden {
+    position: absolute !important;
+    height: 1px; width: 1px; overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap; /* added line to prevent the text from wrapping */
+}
+.ba-container { margin-top: 1rem; display:flex; gap:1rem; align-items:flex-start; justify-content:flex-start; }
+.ba-view { position: relative; width: auto; max-width: 100%; overflow: hidden; border-radius:6px; /* aspect-ratio is set by JS via padding-top; width is set by JS to constrain height */
+    flex: 0 0 auto; /* prevent flex shrinking so width set by JS is respected */ }
+.ba-layer {
+    position: absolute;
+    inset: 0;
+    display: block;
+    box-sizing: border-box;
+}
+
+/* Inner content wrapper that is transformed (scale/translate) while outer layer
+   remains untransformed so clip-path coordinates match view space and the
+   divider position. */
+.ba-content { width:100%; height:100%; transform-origin: 0 0; }
+.ba-before-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto; /* will be set by JS to match rendered image */
+    overflow: hidden;
+    z-index: 0;
+    box-sizing: border-box;
+}
+.ba-image {
+    display: block;
+    width: 100%;
+    height: 100%; /* fill the view height; JS sets explicit .ba-view height */
+    object-fit: contain;
+    /* anchor images to the top-left so their visual position doesn't shift vertically when the view changes */
+    object-position: left top;
+    -webkit-user-drag: none; 
+    -webkit-user-select: none; 
+    -moz-user-select: none; 
+    user-select: none; 
+    pointer-events: none; 
+}
+.ba-after-stack {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: 0;
+    height: auto; /* let JS set actual height to match rendered image */
+    overflow: hidden;
+    z-index: 1; /* clip applied to this stack */
+    box-sizing: border-box;
+}
+.ba-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    background: transparent;
+}
+
+.ba-explain { flex: 1 1 auto; min-width: 0; padding: 8px 12px; display:flex; align-items:flex-start; justify-content:flex-start; max-width: 320px; }
+/* debug outlines removed */
+.ba-legend { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; }
+.ba-legend li { display:flex; align-items:center; gap:.75rem; font-size:0.95rem; color:#222; }
+.swatch { display:inline-block; width:20px; height:14px; border-radius:3px; box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset; }
+.swatch.double { display:inline-flex; width:24px; height:14px; padding:0; gap:1px; }
+.swatch.double .part { flex:1 1 50%; display:block; }
+.ba-legend .label { display:inline-block; color: #111; }
+
+@media (max-width: 600px) {
+    .ba-legend li { font-size: .95rem; }
+}
+.ba-container.ba-stack { flex-direction: column; }
+.ba-container.ba-stack .ba-view { width: 100% !important; }
+.ba-container.ba-stack .ba-explain { width:100%; min-width:0; }
+.ba-controls { display:flex; gap: .5rem; align-items:center; margin-top: .5rem; }
+.ba-range { -webkit-appearance: none; appearance:none; width: 100%; }
+.ba-range::-webkit-slider-runnable-track { height:6px; background:#eee; border-radius:6px; }
+.ba-range::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; background:var(--accent); border-radius:50%; margin-top:-6px; }
+
+/* Divider + handle */
+.ba-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--accent);
+    transform: translateX(-50%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events: none;
+    z-index: 4; /* ensure divider sits above overlay/image stacks */
+}
+.ba-divider::after { 
+    content: ''; 
+    position:absolute; 
+    inset:0; 
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08) inset; 
+}
+.ba-handle {
+    pointer-events: auto;
+    position: relative;
+    width: 10px;
+    height: 28px;
+    border-radius: 5%;
+    background: var(--accent);
+    border: 4px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    cursor: grab;
+    z-index: 5; /* bring handle above the divider/overlay */
+}
+.ba-handle:active { 
+    cursor: grabbing; 
+}
+.ba-handle:focus {
+    outline: 3px solid rgba(var(--accent-rgb),0.18);
+    outline-offset: 2px; 
+}
+
+.ba-handle[disabled] { opacity: .5; pointer-events: none; }
+
+@media (max-width: 480px) {
+    .ba-handle { width: 36px; height: 36px; }
+}
+
+/* Zoom controls inside the view */
+.ba-zoom-controls {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    display:flex;
+    gap:6px;
+    align-items:center;
+    z-index: 10;
+    background: rgba(255,255,255,0.85);
+    padding: 6px 8px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.ba-zoom-btn { border: none; background: var(--accent); color: #fff; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 1rem; line-height:1; }
+.ba-zoom-btn:active { transform: translateY(1px); }
+.ba-zoom-display { font-size: .85rem; color:#222; min-width: 48px; text-align:center; }
+.ba-zoom-range {
+    width: 120px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent) 50%, #eee 50%);
+    border-radius: 6px;
+    outline: none;
+}
+.ba-zoom-range:focus { box-shadow: 0 0 0 4px rgba(var(--accent-rgb),0.08); }
+
+/* WebKit thumb */
+.ba-zoom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    margin-top: -5px; /* center on track */
+}
+.ba-zoom-range::-webkit-slider-runnable-track { height: 6px; border-radius: 6px; }
+
+/* Firefox */
+.ba-zoom-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+.ba-zoom-range::-moz-range-track { height: 6px; border-radius: 6px; background: transparent; }
+.ba-image, .ba-overlay { transition: transform .12s ease-out; }
+
+/* Panning cursor states */
+.ba-pannable { cursor: grab; }
+.ba-pannable.ba-panning { cursor: grabbing; }
+
+/* No fixed max-height here; JS will size the view based on image aspect and viewport height */
