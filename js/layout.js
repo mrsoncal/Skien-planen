@@ -1,14 +1,17 @@
 (function () {
     function pathPrefixForCurrentPage() {
-        // Computes how many "../" segments we need from the current page back to site root.
-        // Examples:
-        // - /index.html -> ""
-        // - /pages/infrastruktur.html -> "../"
-        // - /pages/foo/bar.html -> "../../"
+        // Computes the relative prefix back to the site root (where index.html lives).
+        // This site only has one level of content pages under /pages/.
+        // IMPORTANT: location.pathname may include extra leading segments when hosted
+        // under a subfolder (e.g. /Skien-planen/pages/...), so counting segments
+        // from the absolute path will produce broken prefixes.
         try {
-            var parts = String(location.pathname || '/').split('/').filter(Boolean);
-            if (parts.length <= 1) return '';
-            return new Array(parts.length).join('../');
+            var path = String(location.pathname || '/').replace(/\\/g, '/');
+
+            // If current file is inside /pages/, we need to go up one level.
+            // Otherwise (index.html at the root), no prefix.
+            if (/\/pages\//.test(path)) return '../';
+            return '';
         } catch (err) {
             return '';
         }
