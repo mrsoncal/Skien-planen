@@ -57,6 +57,17 @@ header nav a[aria-current="page"] {
 /* Inline links in content (highlightable and clickable) */
 .inline-link { color: var(--accent); text-decoration: none; font-weight: 600; border-bottom: 1px solid transparent; }
 .inline-link:hover, .inline-link:focus-visible { background: rgba(var(--accent-rgb),0.06); border-bottom-color: var(--accent); outline: none; }
+
+/* Anchor target helpers so clicked polygon targets scroll into view nicely and show a soft highlight */
+.section-anchor { scroll-margin-top: 80px; transition: background .18s ease; }
+.section-anchor:target { background: rgba(var(--accent-rgb),0.06); padding: .5rem; border-radius: 6px; }
+
+/* Visual separation between navigable titles (anchors) */
+.hero .section-anchor:not(:first-of-type) {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.08);
+}
 .container { 
     display: grid; 
     gap: 1rem; 
@@ -89,6 +100,8 @@ header nav a[aria-current="page"] {
    remains untransformed so clip-path coordinates match view space and the
    divider position. */
 .ba-content { width:100%; height:100%; transform-origin: 0 0; }
+/* Prevent native image/SVG dragging and selection inside the view */
+.ba-content, .ba-image, .ba-overlay, .ba-view { -webkit-user-drag: none; user-drag: none; -webkit-user-select: none; -moz-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .ba-before-layer {
     position: absolute;
     left: 0;
@@ -131,6 +144,24 @@ header nav a[aria-current="page"] {
     z-index: 2;
     pointer-events: none;
     background: transparent;
+}
+
+/* Make overlay objects selectable/clickable without stealing events on empty areas */
+.ba-overlay [data-ba-link="true"] { pointer-events: visiblePainted; cursor: pointer; }
+
+/* No "selection box" outline when clicking/focusing overlay items */
+.ba-overlay [data-ba-link="true"]:focus,
+.ba-overlay [data-ba-link="true"]:focus-visible {
+    outline: none;
+}
+
+/* Hover affordance: darken hovered item */
+.ba-overlay [data-ba-link="true"] {
+    transition: filter .12s ease-out;
+}
+.ba-overlay [data-ba-link="true"]:hover,
+.ba-overlay [data-ba-link="true"]:focus {
+    filter: brightness(0.78);
 }
 
 .ba-explain { flex: 1 1 auto; min-width: 0; padding: 8px 12px; display:flex; align-items:flex-start; justify-content:flex-start; max-width: 320px; }

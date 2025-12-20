@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Arkitektur — Skien Planen</title>
-    <link rel="stylesheet" href="../styles/styles.css" />
+    <link rel="stylesheet" href="../styles/styles.css?v=1.1" />
 </head>
 <body>
     <header>
@@ -21,15 +21,22 @@
     </header>
 
     <main>
-        <section class="hero">
-            <h2>Arkitektur</h2>
-            <p>Presentasjon av arkitektur- og bebyggelsesforslag.</p>
-        </section>
+        <div class="container">
+            <section class="hero" id="arkitektur">
+                <h2>Arkitektur</h2>
+                <p>Presentasjon av arkitektur- og bebyggelsesforslag.</p>
+            </section>
+            <section class="hero" aria-labelledby="ark-sections">
+                <h3 id="skien-aktiemolle" class="section-anchor">Skien Aktiemølle</h3>
+                <h3 id="henrik-ibsens-gate" class="section-anchor">Henrik Ibsens gate</h3>
+                <h3 id="ovre-skistredet-fv32" class="section-anchor">Øvre Skistredet/Fv32</h3>
+            </section>
+        </div>
     </main>
 
     <footer>
         <div style="max-width:900px;margin:0 auto;text-align:center;">
-            <small>&copy; <span id="year"></span> Skien Planen</small>
+            <small>&copy; <span id="year"></span> Sondre Callaerts</small>
         </div>
     </footer>
 

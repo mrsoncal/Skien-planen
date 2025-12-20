@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Kollektivtransport — Skien Planen</title>
-    <link rel="stylesheet" href="../styles/styles.css" />
+    <link rel="stylesheet" href="../styles/styles.css?v=1.1" />
 </head>
 <body>
     <header>
@@ -21,15 +21,23 @@
     </header>
 
     <main>
-        <section class="hero">
-            <h2>Kollektivtransport</h2>
-            <p>Side for kollektivtransport-prosjekter, bussfelt, holdeplasser og lignende.</p>
-        </section>
+        <div class="container">
+            <section class="hero" id="kollektivtransport">
+                <h2>Kollektivtransport</h2>
+                <p>Side for kollektivtransport-prosjekter, bussfelt, holdeplasser og lignende.</p>
+            </section>
+            <section class="hero" aria-labelledby="kollektiv-sections">
+                <h3 id="kongens-gate-bussvei" class="section-anchor">Kongens gate Bussvei</h3>
+                <h3 id="skien-togstasjon-i-fjellveggen" class="section-anchor">Skien Togstasjon i Fjellveggen</h3>
+                <h3 id="klostergata-bussfelt" class="section-anchor">Klostergata Bussfelt</h3>
+                <h3 id="bolevegen-bussfelt" class="section-anchor">Bølevegen Bussfelt</h3>
+            </section>
+        </div>
     </main>
 
     <footer>
         <div style="max-width:900px;margin:0 auto;text-align:center;">
-            <small>&copy; <span id="year"></span> Skien Planen</small>
+            <small>&copy; <span id="year"></span> Sondre Callaerts</small>
         </div>
     </footer>
 

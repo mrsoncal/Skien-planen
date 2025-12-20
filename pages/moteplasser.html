@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Møteplasser — Skien Planen</title>
-    <link rel="stylesheet" href="../styles/styles.css" />
+    <link rel="stylesheet" href="../styles/styles.css?v=1.1" />
 </head>
 <body>
     <header>
@@ -21,15 +21,22 @@
     </header>
 
     <main>
-        <section class="hero">
-            <h2>Møteplasser</h2>
-            <p>Forslag til nye møteplasser, byrom og arrangementer for sentrum.</p>
-        </section>
+        <div class="container">
+            <section class="hero" id="moteplasser">
+                <h2>Møteplasser</h2>
+                <p>Forslag til nye møteplasser, byrom og arrangementer for sentrum.</p>
+            </section>
+            <section class="hero" aria-labelledby="mote-sections">
+                <h3 id="radhusplassen" class="section-anchor">Rådhusplassen</h3>
+                <h3 id="rundkjoringa-sentrum" class="section-anchor">Rundkjøringa sentrum</h3>
+                <h3 id="falkum-bad" class="section-anchor">Falkum Bad</h3>
+            </section>
+        </div>
     </main>
 
     <footer>
         <div style="max-width:900px;margin:0 auto;text-align:center;">
-            <small>&copy; <span id="year"></span> Skien Planen</small>
+            <small>&copy; <span id="year"></span> Sondre Callaerts</small>
         </div>
     </footer>
 
