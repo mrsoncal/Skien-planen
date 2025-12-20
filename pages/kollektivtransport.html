@@ -7,18 +7,7 @@
     <link rel="stylesheet" href="../styles/styles.css?v=1.1" />
 </head>
 <body>
-    <header>
-        <div>
-            <h1>Skien Planen</h1>
-            <nav aria-label="Primary">
-                <a href="../index.html">Hjem</a>
-                <a href="../pages/infrastruktur.html">Infrastruktur</a>
-                <a href="../pages/kollektivtransport.html">Kollektivtransport</a>
-                <a href="../pages/moteplasser.html">Møteplasser</a>
-                <a href="../pages/arkitektur.html">Arkitektur</a>
-            </nav>
-        </div>
-    </header>
+    <header data-layout="header"></header>
 
     <main>
         <div class="container">
@@ -35,12 +24,13 @@
         </div>
     </main>
 
-    <footer>
-        <div style="max-width:900px;margin:0 auto;text-align:center;">
-            <small>&copy; <span id="year"></span> Sondre Callaerts</small>
-        </div>
-    </footer>
+    <footer data-layout="footer"></footer>
 
+    <script src="../js/layout.js"></script>
+    <script src="../js/headerAutoHide.js"></script>
+    <script src="../js/mobileNav.js"></script>
+    <script src="../js/activeNav.js"></script>
+    <script src="../js/backLink.js"></script>
     <script src="../js/currentYear.js"></script>
 </body>
 </html>

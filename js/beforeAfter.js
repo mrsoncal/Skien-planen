@@ -20,6 +20,27 @@
             .replace(/-+$/, '');
     }
 
+    function parseHashParams() {
+        // Supports simple "#key=value&key2=value2" hashes.
+        var raw = String(location.hash || '');
+        if (!raw || raw === '#') return {};
+        var s = raw.charAt(0) === '#' ? raw.slice(1) : raw;
+        if (s.indexOf('=') === -1) return {};
+        var out = {};
+        s.split('&').forEach(function (pair) {
+            var idx = pair.indexOf('=');
+            if (idx <= 0) return;
+            var k = pair.slice(0, idx);
+            var v = pair.slice(idx + 1);
+            try {
+                out[decodeURIComponent(k)] = decodeURIComponent(v);
+            } catch (err) {
+                out[k] = v;
+            }
+        });
+        return out;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         var view = qs('#baView');
         var beforeImg = qs('.ba-before-img');
@@ -32,6 +53,11 @@
         var handle = qs('#baHandle');
         var beforeContent = beforeLayer ? qs('.ba-content', beforeLayer) : null;
         var afterContent = afterStack ? qs('.ba-content', afterStack) : null;
+
+        var tooltip = qs('#baTooltip');
+        var searchForm = qs('#baSearchForm');
+        var searchInput = qs('#baSearch');
+        var searchList = qs('#baSearchList');
 
         if (!view || !beforeImg || !beforeLayer || !afterStack || !afterImg || !overlay || !divider || !handle) return;
 
@@ -54,9 +80,50 @@
         var panStart = null;
         var panStartOffset = { x: 0, y: 0 };
 
+        var overlayItems = [];
+        var selectedOverlayEl = null;
+        var pendingFocusSlug = null;
+        var didApplyFocus = false;
+
+        try {
+            var hp = parseHashParams();
+            if (hp && hp.focus) pendingFocusSlug = slugify(hp.focus);
+        } catch (err) { /* ignore */ }
+
         // ----------------------------
         // Overlay links + hit areas
         // ----------------------------
+        function clearSelectedOverlay() {
+            try {
+                if (selectedOverlayEl) selectedOverlayEl.classList.remove('is-selected');
+            } catch (err) { /* ignore */ }
+            selectedOverlayEl = null;
+        }
+
+        function setSelectedOverlay(el) {
+            if (!el) return;
+            try {
+                if (selectedOverlayEl && selectedOverlayEl !== el) selectedOverlayEl.classList.remove('is-selected');
+                selectedOverlayEl = el;
+                selectedOverlayEl.classList.add('is-selected');
+            } catch (err) { /* ignore */ }
+        }
+
+        function decorateHrefWithFrom(href, title) {
+            try {
+                if (!href) return href;
+                var slug = slugify(title);
+                var hashIdx = href.indexOf('#');
+                if (hashIdx === -1) return href;
+                var base = href.slice(0, hashIdx);
+                var anchor = href.slice(hashIdx + 1);
+                var sep = (base.indexOf('?') === -1) ? '?' : '&';
+                return base + sep + 'from=' + encodeURIComponent(slug) + '#' + anchor;
+            } catch (err) {
+                return href;
+            }
+        }
+
         function setupOverlayLinks() {
             if (!overlay) return;
 
@@ -220,7 +287,8 @@
             };
 
             function hrefForTitle(title) {
-                return titleToHref[slugify(title)] || null;
+                var raw = titleToHref[slugify(title)] || null;
+                return decorateHrefWithFrom(raw, title);
             }
 
             function markInteractive(el, title, href) {
@@ -251,6 +319,7 @@
                 if (!el) return false;
                 var href = el.dataset && el.dataset.baHref;
                 if (!href) return false;
+                try { setSelectedOverlay(el); } catch (err) { /* ignore */ }
                 window.location.href = href;
                 return true;
             }
@@ -267,7 +336,20 @@
                     var title = (titleEl.textContent || '').trim();
                     if (!title) return;
 
-                    markInteractive(el, title, hrefForTitle(title));
+                    // Prevent the browser's default tooltip (SVG <title>) so our styled tooltip is the only one.
+                    try { titleEl.parentNode && titleEl.parentNode.removeChild(titleEl); } catch (err) { /* ignore */ }
+
+                    var href = hrefForTitle(title);
+                    markInteractive(el, title, href);
+
+                    try {
+                        overlayItems.push({
+                            el: el,
+                            title: title,
+                            slug: slugify(title),
+                            href: href
+                        });
+                    } catch (err) { /* ignore */ }
 
                     if (shouldExpandHitAreaForTitle(title)) {
                         if (isPHusTitle(title)) addHitPadding(el, 6);
@@ -290,6 +372,159 @@
         }
 
         setupOverlayLinks();
+
+        // ----------------------------
+        // Tooltip
+        // ----------------------------
+        function hideTooltip() {
+            if (!tooltip) return;
+            try {
+                tooltip.classList.remove('is-visible');
+                tooltip.setAttribute('aria-hidden', 'true');
+            } catch (err) { /* ignore */ }
+        }
+
+        function showTooltip(text, clientX, clientY) {
+            if (!tooltip || !text) return;
+            try {
+                tooltip.textContent = text;
+                tooltip.setAttribute('aria-hidden', 'false');
+            } catch (err) { /* ignore */ }
+
+            try {
+                var vr = view.getBoundingClientRect();
+                var x = Math.round(clientX - vr.left) + 12;
+                var y = Math.round(clientY - vr.top) + 12;
+
+                tooltip.style.left = x + 'px';
+                tooltip.style.top = y + 'px';
+                tooltip.classList.add('is-visible');
+
+                // Clamp after layout so we can read offsetWidth/Height.
+                requestAnimationFrame(function () {
+                    try {
+                        var maxX = Math.max(0, Math.floor(vr.width - tooltip.offsetWidth - 8));
+                        var maxY = Math.max(0, Math.floor(vr.height - tooltip.offsetHeight - 8));
+                        var cx = clamp(x, 8, maxX);
+                        var cy = clamp(y, 8, maxY);
+                        tooltip.style.left = cx + 'px';
+                        tooltip.style.top = cy + 'px';
+                    } catch (err) { /* ignore */ }
+                });
+            } catch (err) { /* ignore */ }
+        }
+
+        function attachTooltipHandlers() {
+            if (!overlay || !tooltip) return;
+
+            overlay.addEventListener('pointermove', function (e) {
+                try {
+                    if (dragging || isPanning || zoomInteracting) return;
+                    var el = overlay.__baFindInteractiveTarget && overlay.__baFindInteractiveTarget(e.target);
+                    if (!el) return hideTooltip();
+                    showTooltip(el.dataset.baTitle || '', e.clientX, e.clientY);
+                } catch (err) { /* ignore */ }
+            });
+
+            overlay.addEventListener('pointerleave', function () {
+                hideTooltip();
+            });
+
+            overlay.addEventListener('focusin', function (e) {
+                try {
+                    var el = overlay.__baFindInteractiveTarget && overlay.__baFindInteractiveTarget(e.target);
+                    if (!el) return;
+                    var r = el.getBoundingClientRect();
+                    showTooltip(el.dataset.baTitle || '', r.left + r.width / 2, r.top + r.height / 2);
+                } catch (err) { /* ignore */ }
+            });
+
+            overlay.addEventListener('focusout', function () {
+                hideTooltip();
+            });
+        }
+
+        attachTooltipHandlers();
+
+        // ----------------------------
+        // Search
+        // ----------------------------
+        function centerOnOverlayElement(el) {
+            if (!el) return;
+            try {
+                // At 100% zoom, pan is clamped to 0, so we can't meaningfully "jump".
+                // Auto-zoom slightly to enable panning.
+                if (zoom <= 1.001) {
+                    setZoom(1.5);
+                    requestAnimationFrame(function () { centerOnOverlayElement(el); });
+                    return;
+                }
+
+                var vr = view.getBoundingClientRect();
+                var er = el.getBoundingClientRect();
+                if (!vr.width || !vr.height || !er.width || !er.height) return;
+
+                var viewCenterX = vr.left + vr.width / 2;
+                var viewCenterY = vr.top + vr.height / 2;
+                var elCenterX = er.left + er.width / 2;
+                var elCenterY = er.top + er.height / 2;
+                var dx = Math.round(elCenterX - viewCenterX);
+                var dy = Math.round(elCenterY - viewCenterY);
+                panX = panX + dx;
+                panY = panY + dy;
+                applyTransform();
+            } catch (err) { /* ignore */ }
+        }
+
+        function findOverlayItemByQuery(q) {
+            var s = slugify(q);
+            if (!s) return null;
+            for (var i = 0; i < overlayItems.length; i++) {
+                if (overlayItems[i].slug === s) return overlayItems[i];
+            }
+            // fallback: substring match
+            for (var j = 0; j < overlayItems.length; j++) {
+                if (overlayItems[j].slug.indexOf(s) !== -1) return overlayItems[j];
+            }
+            return null;
+        }
+
+        function populateSearchList() {
+            if (!searchList || !overlayItems || !overlayItems.length) return;
+            try {
+                searchList.innerHTML = '';
+                var sorted = overlayItems.slice().sort(function (a, b) {
+                    return normalizeText(a.title).localeCompare(normalizeText(b.title));
+                });
+                sorted.forEach(function (item) {
+                    var opt = document.createElement('option');
+                    opt.value = item.title;
+                    searchList.appendChild(opt);
+                });
+            } catch (err) { /* ignore */ }
+        }
+
+        function setupSearch() {
+            if (!searchForm || !searchInput) return;
+            populateSearchList();
+
+            searchForm.addEventListener('submit', function (e) {
+                try { e.preventDefault(); } catch (err) { /* ignore */ }
+                var q = (searchInput.value || '').trim();
+                if (!q) return;
+                var item = findOverlayItemByQuery(q);
+                if (!item || !item.el) return;
+                setSelectedOverlay(item.el);
+                centerOnOverlayElement(item.el);
+
+                try {
+                    var r = item.el.getBoundingClientRect();
+                    showTooltip(item.title, r.left + r.width / 2, r.top + r.height / 2);
+                } catch (err) { /* ignore */ }
+            });
+        }
+
+        setupSearch();
 
         // ----------------------------
         // Slider
@@ -421,6 +656,8 @@
         view.addEventListener('pointerdown', function (e) {
             if (zoomInteracting) return;
 
+            hideTooltip();
+
             // If this is a click on an interactive overlay element, let it behave like a link.
             try {
                 if (overlay && overlay.__baFindInteractiveTarget && overlay.__baFindInteractiveTarget(e.target)) return;
@@ -472,6 +709,7 @@
                 isPanning = false;
                 view.classList.remove('ba-panning');
             }
+            hideTooltip();
             try { view.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
             try { handle.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         }
@@ -481,6 +719,7 @@
             dragging = false;
             isPanning = false;
             view.classList.remove('ba-panning');
+            hideTooltip();
         });
 
         // Prevent native drag / selection inside the view
@@ -623,41 +862,24 @@
                 - (footer ? footer.offsetHeight : 0)
                 - reserved;
 
-            var targetHeight = Math.min(availableHeight, h);
-            var widthForMaxHeight = (targetHeight * w) / h;
-
+            // Full-width map layout (legend is stacked below in CSS).
             var container = view.parentElement;
-            var gap = 16;
-            var legendEl = container ? container.querySelector('.ba-explain') : null;
-
-            var legendIntrinsic = measureLegendIntrinsicWidth(legendEl);
             var containerWidth = (container ? container.clientWidth : window.innerWidth);
-            var maxWidthAllowed = containerWidth - legendIntrinsic - gap;
-            if (maxWidthAllowed < 200) maxWidthAllowed = containerWidth;
+            view.style.width = '100%';
 
-            var candidateWidth = Math.min(widthForMaxHeight, maxWidthAllowed);
-            if (containerWidth < 600) candidateWidth = Math.min(candidateWidth, containerWidth);
-            candidateWidth = Math.max(200, Math.floor(candidateWidth));
+            var iw = intrinsicW || beforeImg.naturalWidth || w;
+            var ih = intrinsicH || beforeImg.naturalHeight || h;
+            var desiredHeight = (containerWidth && iw && ih)
+                ? Math.round((containerWidth * ih) / iw)
+                : Math.round(beforeImg.getBoundingClientRect().height) || Math.round(window.innerHeight * 0.5);
 
-            view.style.width = candidateWidth + 'px';
-            var legendWidthAfter = Math.ceil(legendEl ? (legendEl.clientWidth || legendEl.scrollWidth) : 0) || legendIntrinsic;
+            // Desktop: prefer true aspect ratio (allow page to scroll).
+            // Mobile: cap to available viewport height to avoid an overly tall viewport.
+            var shouldCapHeight = (window.innerWidth || 0) <= 700;
+            var finalHeight = desiredHeight;
+            if (shouldCapHeight) finalHeight = Math.min(Math.round(availableHeight), desiredHeight);
+            view.style.height = Math.max(200, finalHeight) + 'px';
 
-            if (candidateWidth + gap + legendWidthAfter <= containerWidth) {
-                container.classList.remove('ba-stack');
-                var maxAllowedNow = containerWidth - legendWidthAfter - gap;
-                if (candidateWidth > maxAllowedNow) view.style.width = Math.max(200, Math.floor(maxAllowedNow)) + 'px';
-            } else {
-                var reduced = Math.max(200, Math.floor(containerWidth - legendWidthAfter - gap));
-                if (reduced > 200 && reduced >= Math.floor(widthForMaxHeight * 0.5)) {
-                    container.classList.remove('ba-stack');
-                    view.style.width = reduced + 'px';
-                } else {
-                    container.classList.add('ba-stack');
-                    view.style.width = Math.max(200, Math.floor(Math.min(widthForMaxHeight, containerWidth))) + 'px';
-                }
-            }
-
-            setViewHeightFromIntrinsic();
             alignDividerToImage();
         }
 
@@ -698,6 +920,31 @@
         // Initial render
         setZoom(1);
         updateZoomRangeFill();
+
+        function applyInitialFocusIfNeeded() {
+            if (didApplyFocus) return;
+            if (!pendingFocusSlug) return;
+            var item = findOverlayItemByQuery(pendingFocusSlug);
+            if (!item || !item.el) return;
+            didApplyFocus = true;
+            setSelectedOverlay(item.el);
+            centerOnOverlayElement(item.el);
+        }
+
+        // Apply focus once layout is stable.
+        scheduleLayout = function () {
+            if (scheduled) return;
+            scheduled = requestAnimationFrame(function () {
+                scheduled = null;
+                setAspect().then(function () {
+                    updateLayout();
+                    alignDividerToImage();
+                    applyTransform();
+                    applyInitialFocusIfNeeded();
+                });
+            });
+        };
+
         scheduleLayout();
     });
 })();

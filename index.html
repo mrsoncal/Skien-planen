@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="no">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -10,18 +10,7 @@
     <link rel="stylesheet" href="styles/styles.css" />
 </head>
 <body>
-    <header>
-        <div>
-            <h1>Skien Planen</h1>
-            <nav aria-label="Primary">
-                <a href="index.html">Hjem</a>
-                <a href="pages/infrastruktur.html">Infrastruktur</a>
-                <a href="pages/kollektivtransport.html">Kollektivtransport</a>
-                <a href="pages/moteplasser.html">Møteplasser</a>
-                <a href="pages/arkitektur.html">Arkitektur</a>
-            </nav>
-        </div>
-    </header>
+    <header data-layout="header"></header>
 
     <main>
         <div class="container">
@@ -39,6 +28,24 @@ Derfor har jeg laget denne siden for å vise AKKURAT de endringene JEG ville gjo
             <section class="hero">
                 <h2>Interaktivt kart</h2>
                 <p>Trykk på noen av endringene for å se foreslåtte tiltak</p>
+
+                <form id="baSearchForm" class="ba-search" role="search" aria-label="Søk i kartet">
+                    <label class="ba-search-label" for="baSearch">Søk tiltak</label>
+                    <input
+                        id="baSearch"
+                        class="ba-search-input"
+                        name="q"
+                        type="search"
+                        inputmode="search"
+                        autocomplete="off"
+                        list="baSearchList"
+                        placeholder="Skriv for å søke"
+                        aria-describedby="baSearchHelp"
+                    />
+                    <datalist id="baSearchList"></datalist>
+                    <button class="ba-search-button" type="submit">Finn</button>
+                    <p id="baSearchHelp" class="visually-hidden">Søk etter tiltak og trykk Enter for å hoppe til det på kartet.</p>
+                </form>
 
                 <!-- Before / After image slider -->
                 <div class="ba-container" aria-labelledby="ba-label">
@@ -73,6 +80,8 @@ Derfor har jeg laget denne siden for å vise AKKURAT de endringene JEG ville gjo
                             <div class="ba-zoom-display" aria-hidden="true"><span id="baZoomValue">100%</span></div>
                             <input id="baZoomRange" class="ba-zoom-range" type="range" min="100" max="300" step="10" value="100" aria-label="Zoomnivå" />
                         </div>
+
+                        <div id="baTooltip" class="ba-tooltip" role="status" aria-live="polite" aria-hidden="true"></div>
                     </div>
 
                     <!-- right-side area for explanations / legends -->
@@ -107,12 +116,12 @@ Derfor har jeg laget denne siden for å vise AKKURAT de endringene JEG ville gjo
         </div>
     </main>
 
-    <footer>
-        <div style="max-width:900px;margin:0 auto;text-align:center;">
-            <small>&copy; <span id="year"></span> Sondre Callaerts</small>
-        </div>
-    </footer>
+    <footer data-layout="footer"></footer>
 
+    <script src="js/layout.js"></script>
+    <script src="js/headerAutoHide.js"></script>
+    <script src="js/mobileNav.js"></script>
+    <script src="js/activeNav.js"></script>
     <script src="js/beforeAfter.js"></script>
     <script src="js/currentYear.js"></script>
 </body>
