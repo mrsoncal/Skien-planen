@@ -554,7 +554,7 @@
             var max = Number(zoomRange.max) || 300;
             var val = Number(zoomRange.value) || 100;
             var pct = Math.round(((val - min) / (max - min)) * 100);
-            zoomRange.style.background = 'linear-gradient(90deg, var(--accent) ' + pct + '%, #eee ' + pct + '%)';
+            zoomRange.style.setProperty('--zoom-fill', pct + '%');
         }
 
         function applyTransform() {
@@ -670,7 +670,7 @@
             var clickPercent = (clickX / rect.width) * 100;
             var dividerPercent = parseFloat(divider.style.left) || current;
             var dividerLeftPx = Math.round((dividerPercent / 100) * rect.width);
-            var tol = 20;
+            var tol = (e.pointerType === 'touch') ? 40 : 20;
 
             if (Math.abs(clickX - dividerLeftPx) <= tol) {
                 dragging = true;
