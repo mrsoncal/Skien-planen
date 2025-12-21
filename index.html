@@ -16,9 +16,7 @@
         <div class="container">
             <section class="hero" aria-labelledby="welcome-title">
                 <h2 id="welcome-title">Kjære, stygge, bilsentrerte Skien</h2>
-                <p>Kjære, stygge, bilsentrerte Skien
-
-Hvis det er en ting vi i Skien er glad i, så er det bilen vår. Vi elsker å kunne sette oss i bilen, fyke av gårde, og være på Herkules på fem minutter. Hvorfor skal vi ta kollektiv når det tar tid å gå til busstoppet, vente på bussen som er for sen uansett, og så sitte i samme køen du uansett ville stått i med bil? <br><br>
+                <p>Hvis det er en ting vi i Skien er glad i, så er det bilen vår. Vi elsker å kunne sette oss i bilen, fyke av gårde, og være på Herkules på fem minutter. Hvorfor skal vi ta kollektiv når det tar tid å gå til busstoppet, vente på bussen som er for sen uansett, og så sitte i samme køen du uansett ville stått i med bil? <br><br>
 
 Likevel skulle vi alle ønske at vi hadde et finere sentrum, med mer gågater med butikker, et julemarked, flott arkitektur, og sprudlende uteliv. Det er som om vi ikke er villige til å ofre bilen for et finere uteområde med gangmuligheter. Og dette skjønner jeg godt. I 1886 brant mye av byen ned. Dette var en flott mulighet for å bygge opp igjen byen rundt mobile fartøy. Det skulle være lett å komme seg rundt med hest og kjerre, og senere også bilen, men når byen vokste, gjorde også behovet for utvidet veinett det. I tillegg gikk ekspansjon av byen på bekostning av arkitektur og byplanlegging. I dag har vi det som er en over gjennomsnittlig stygg by, med ekstremt mye potensiale. Og jeg klarer ikke å stå å se på, mens vi vimser rundt dårlige løsninger på problemene. <br><br>
 
@@ -51,6 +49,20 @@ Derfor har jeg laget denne siden for å vise AKKURAT de endringene JEG ville gjo
                 <div class="ba-container" aria-labelledby="ba-label">
                     <p id="ba-label" class="visually-hidden">Før og etter kart - dra slideren for å sammenligne</p>
                     <div class="ba-view" id="baView">
+                        <div class="ba-fs-controls" aria-label="Kartmodus">
+                            <div class="ba-fs-left">
+                                <button type="button" id="baFullscreenFilters" class="ba-fs-btn ba-fs-filters" aria-label="Filtre" aria-expanded="false" aria-controls="baExplain">
+                                    <svg class="ba-fs-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                                        <path fill="currentColor" d="M3 5h18l-7 8v5l-4 2v-7L3 5z" />
+                                    </svg>
+                                    <span class="visually-hidden">Filtre</span>
+                                </button>
+                            </div>
+                            <div class="ba-fs-right">
+                                <button type="button" id="baFullscreenOpen" class="ba-fs-btn ba-fs-open" aria-label="Utvid kart">⤢</button>
+                                <button type="button" id="baFullscreenClose" class="ba-fs-btn ba-fs-close" aria-label="Lukk fullskjerm">×</button>
+                            </div>
+                        </div>
                         <!-- Before image: prefer PNG (Skien_sentrum_before.png) with SVG fallback -->
                         <picture class="ba-layer ba-before-layer">
                             <div class="ba-content">
@@ -78,14 +90,14 @@ Derfor har jeg laget denne siden for å vise AKKURAT de endringene JEG ville gjo
                         <!-- Zoom controls (zoom inside bounding box) -->
                         <div class="ba-zoom-controls" aria-hidden="false">
                             <div class="ba-zoom-display" aria-hidden="true"><span id="baZoomValue">100%</span></div>
-                            <input id="baZoomRange" class="ba-zoom-range" type="range" min="100" max="300" step="10" value="100" aria-label="Zoomnivå" />
+                            <input id="baZoomRange" class="ba-zoom-range" type="range" min="100" max="400" step="10" value="100" aria-label="Zoomnivå" />
                         </div>
 
                         <div id="baTooltip" class="ba-tooltip" role="status" aria-live="polite" aria-hidden="true"></div>
                     </div>
 
                     <!-- right-side area for explanations / legends -->
-                    <aside class="ba-explain" aria-label="Forklaring">
+                    <aside id="baExplain" class="ba-explain" aria-label="Forklaring">
                         <ul class="ba-legend" aria-hidden="false">
                             <li><span class="swatch" style="background:#fec300" aria-hidden="true"></span><span class="label">buss-felt/gate</span></li>
                             <li><span class="swatch" style="background:#bc34e5" aria-hidden="true"></span><span class="label">gågate</span></li>
@@ -123,6 +135,8 @@ Derfor har jeg laget denne siden for å vise AKKURAT de endringene JEG ville gjo
     <script src="js/mobileNav.js"></script>
     <script src="js/activeNav.js"></script>
     <script src="js/beforeAfter.js"></script>
+    <script src="js/mapFullscreen.js"></script>
+    <script src="js/markdownInject.js"></script>
     <script src="js/currentYear.js"></script>
 </body>
 </html>

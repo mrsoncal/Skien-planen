@@ -1,0 +1,22 @@
+{
+  "version": 8,
+  "name": "Skien Planen (local tiles)",
+  "center": [9.623995, 59.198397],
+  "zoom": 12,
+  "bounds": [9.515419, 59.17418, 9.732571, 59.222614],
+  "sources": {
+    "skien": {
+      "type": "vector",
+      "url": "pmtiles://tiles/skien.pmtiles"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#f8f9fb"
+      }
+    }
+  ]
+}

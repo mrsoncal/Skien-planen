@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="no">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="OSM basert kart med vektortiles" />
+    <title>OSM Kart - Skien Planen</title>
+
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="styles/osmMap.css" />
+
+    <!-- MapLibre GL JS (open source) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+</head>
+<body>
+    <header data-layout="header"></header>
+
+    <main class="osm-page">
+        <section class="hero osm-hero">
+            <h2>OSM-kart (prototype)</h2>
+            <p><small>Denne siden er en prototype for vektortiles + lag/filtre.</small></p>
+
+            <div class="osm-shell">
+                <div id="osmMap" class="osm-map" aria-label="Kart"></div>
+
+                <aside class="osm-panel" aria-label="Kartlag">
+                    <h3>Kartlag</h3>
+                    <label class="osm-toggle"><input type="checkbox" data-layer-group="labels" checked> Etiketter</label>
+                    <label class="osm-toggle"><input type="checkbox" data-layer-group="roads" checked> Veier</label>
+                    <label class="osm-toggle"><input type="checkbox" data-layer-group="parks" checked> Parker/Grønt</label>
+                    <label class="osm-toggle"><input type="checkbox" data-layer-group="rail" checked> Jernbane</label>
+                    <label class="osm-toggle"><input type="checkbox" data-layer-group="water" checked> Vann</label>
+
+                    <p class="osm-hint">
+                        <small>
+                            Krever at du legger inn <code>tiles/skien.pmtiles</code> og oppdaterer <code>map/style.json</code>.
+                        </small>
+                    </p>
+                </aside>
+            </div>
+
+            <div id="osmStatus" class="osm-status" role="status" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <footer data-layout="footer"></footer>
+
+    <script src="js/layout.js"></script>
+    <script src="js/headerAutoHide.js"></script>
+    <script src="js/mobileNav.js"></script>
+    <script src="js/activeNav.js"></script>
+    <script src="js/currentYear.js"></script>
+
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
+
+    <script src="js/osmMap.js"></script>
+</body>
+</html>

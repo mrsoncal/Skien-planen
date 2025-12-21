@@ -1,0 +1,39 @@
+{
+  "labels": {
+    "match": [
+      "label",
+      "place",
+      "poi"
+    ]
+  },
+  "roads": {
+    "match": [
+      "road",
+      "street",
+      "highway",
+      "transport"
+    ]
+  },
+  "parks": {
+    "match": [
+      "park",
+      "landuse",
+      "green",
+      "forest"
+    ]
+  },
+  "rail": {
+    "match": [
+      "rail",
+      "railway"
+    ]
+  },
+  "water": {
+    "match": [
+      "water",
+      "river",
+      "ocean",
+      "lake"
+    ]
+  }
+}

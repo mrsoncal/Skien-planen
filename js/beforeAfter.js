@@ -70,10 +70,17 @@
 
         var zoom = 1.0;
         var minZoom = 1.0;
-        var maxZoom = 3.0;
+        var maxZoom = 4.0;
         var zoomStep = 0.1;
         var panX = 0;
         var panY = 0;
+
+        // Base size (CSS px) of the transformed content area.
+        // Normally this matches the view, but in fullscreen we set it to a "cover" size
+        // so there is immediate overflow available for panning.
+        var contentBaseW = 0;
+        var contentBaseH = 0;
+        var lastIsFullscreen = false;
 
         var dragging = false;
         var isPanning = false;
@@ -551,17 +558,42 @@
         function updateZoomRangeFill() {
             if (!zoomRange) return;
             var min = Number(zoomRange.min) || 50;
-            var max = Number(zoomRange.max) || 300;
+            var max = Number(zoomRange.max) || 400;
             var val = Number(zoomRange.value) || 100;
             var pct = Math.round(((val - min) / (max - min)) * 100);
+            pct = clamp(pct, 0, 100);
+
+            // Percent fallback (useful for Firefox and non-measured cases)
             zoomRange.style.setProperty('--zoom-fill', pct + '%');
+
+            // Pixel stop for WebKit gradient so the filled track lines up with the thumb center.
+            // Without this, the fill looks "behind" the thumb at the ends.
+            try {
+                var w = Math.round(zoomRange.getBoundingClientRect().width || 0);
+                if (w > 0) {
+                    var isFullscreen = false;
+                    try { isFullscreen = document.body.classList.contains('map-fullscreen'); } catch (err) { isFullscreen = false; }
+
+                    var isMobile = false;
+                    try {
+                        isMobile = window.matchMedia && window.matchMedia('(max-width: 700px), (max-aspect-ratio: 2/3)').matches;
+                    } catch (err) { isMobile = false; }
+
+                    // Keep in sync with CSS thumb sizes.
+                    var thumb = (isFullscreen || isMobile) ? 22 : 16;
+                    var fillPx = ((pct / 100) * Math.max(0, (w - thumb))) + (thumb / 2);
+                    zoomRange.style.setProperty('--zoom-fill-stop', Math.round(fillPx) + 'px');
+                }
+            } catch (err) { /* ignore */ }
         }
 
         function applyTransform() {
             var viewWidth = view.clientWidth || parseInt(view.style.width, 10) || 0;
             var viewHeight = view.clientHeight || parseInt(view.style.height, 10) || 0;
-            var maxPanX = Math.max(0, Math.round((viewWidth * zoom) - viewWidth));
-            var maxPanY = Math.max(0, Math.round((viewHeight * zoom) - viewHeight));
+            var baseW = contentBaseW || viewWidth;
+            var baseH = contentBaseH || viewHeight;
+            var maxPanX = Math.max(0, Math.round((baseW * zoom) - viewWidth));
+            var maxPanY = Math.max(0, Math.round((baseH * zoom) - viewHeight));
             panX = clamp(panX, 0, maxPanX);
             panY = clamp(panY, 0, maxPanY);
 
@@ -586,7 +618,7 @@
             if (zoomValueEl) zoomValueEl.textContent = Math.round(zoom * 100) + '%';
             if (zoomRange) zoomRange.value = String(Math.round(zoom * 100));
 
-            if (zoom > 1) view.classList.add('ba-pannable');
+            if (maxPanX > 0 || maxPanY > 0) view.classList.add('ba-pannable');
             else view.classList.remove('ba-pannable');
 
             updateZoomRangeFill();
@@ -638,6 +670,12 @@
             zoomRange.addEventListener('blur', function () { setZoomInteracting(false); });
             zoomRange.addEventListener('focus', function () { setZoomInteracting(true); });
 
+            // Fallbacks for browsers with partial Pointer Events support.
+            zoomRange.addEventListener('touchstart', function () { setZoomInteracting(true); }, { passive: true });
+            zoomRange.addEventListener('touchend', function () { setZoomInteracting(false); }, { passive: true });
+            zoomRange.addEventListener('mousedown', function () { setZoomInteracting(true); });
+            zoomRange.addEventListener('mouseup', function () { setZoomInteracting(false); });
+
             document.addEventListener('pointerup', function () { setZoomInteracting(false); });
         }
 
@@ -655,6 +693,13 @@
         // ----------------------------
         view.addEventListener('pointerdown', function (e) {
             if (zoomInteracting) return;
+
+            // If user is interacting with zoom/fullscreen controls, do not start panning/divider drag.
+            try {
+                if (e.target && e.target.closest && (e.target.closest('.ba-zoom-controls') || e.target.closest('.ba-fs-controls'))) {
+                    return;
+                }
+            } catch (err) { /* ignore */ }
 
             hideTooltip();
 
@@ -674,15 +719,20 @@
 
             if (Math.abs(clickX - dividerLeftPx) <= tol) {
                 dragging = true;
+                try { view.classList.add('ba-interacting'); } catch (err) { /* ignore */ }
                 try { view.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
                 setValue(clickPercent);
                 return;
             }
 
-            if (zoom > 1) {
+            var canPan = false;
+            try { canPan = view.classList.contains('ba-pannable'); } catch (err) { canPan = false; }
+
+            if (canPan) {
                 isPanning = true;
                 panStart = { x: e.clientX, y: e.clientY };
                 panStartOffset = { x: panX, y: panY };
+                try { view.classList.add('ba-interacting'); } catch (err) { /* ignore */ }
                 try { view.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
                 view.classList.add('ba-panning');
             }
@@ -709,6 +759,7 @@
                 isPanning = false;
                 view.classList.remove('ba-panning');
             }
+            try { view.classList.remove('ba-interacting'); } catch (err) { /* ignore */ }
             hideTooltip();
             try { view.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
             try { handle.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
@@ -719,6 +770,7 @@
             dragging = false;
             isPanning = false;
             view.classList.remove('ba-panning');
+            try { view.classList.remove('ba-interacting'); } catch (err) { /* ignore */ }
             hideTooltip();
         });
 
@@ -854,6 +906,9 @@
             var h = beforeImg.naturalHeight || beforeImg.height;
             if (!w || !h) return;
 
+            var isFullscreen = false;
+            try { isFullscreen = document.body.classList.contains('map-fullscreen'); } catch (err) { isFullscreen = false; }
+
             var header = document.querySelector('header');
             var footer = document.querySelector('footer');
             var reserved = 20;
@@ -862,13 +917,67 @@
                 - (footer ? footer.offsetHeight : 0)
                 - reserved;
 
+            if (isFullscreen) {
+                availableHeight = window.innerHeight;
+            }
+
             // Full-width map layout (legend is stacked below in CSS).
             var container = view.parentElement;
             var containerWidth = (container ? container.clientWidth : window.innerWidth);
-            view.style.width = '100%';
 
             var iw = intrinsicW || beforeImg.naturalWidth || w;
             var ih = intrinsicH || beforeImg.naturalHeight || h;
+            if (isFullscreen && iw && ih) {
+                // Fullscreen viewport: the view fills the screen.
+                // We create a "cover" base content size so there is immediate overflow
+                // available for panning (even at 100% zoom).
+                view.style.width = '100vw';
+                view.style.height = '100vh';
+
+                var vw = window.innerWidth || view.clientWidth || 1;
+                var vh = window.innerHeight || view.clientHeight || 1;
+
+                var coverScale = Math.max(vw / iw, vh / ih);
+                var baseW = Math.max(200, Math.round(iw * coverScale));
+                var baseH = Math.max(200, Math.round(ih * coverScale));
+
+                contentBaseW = baseW;
+                contentBaseH = baseH;
+
+                try {
+                    if (beforeContent) { beforeContent.style.width = baseW + 'px'; beforeContent.style.height = baseH + 'px'; }
+                    if (afterContent) { afterContent.style.width = baseW + 'px'; afterContent.style.height = baseH + 'px'; }
+                } catch (err) { /* ignore */ }
+
+                // Center on entry so we don't "ignore" the cropped edges.
+                if (!lastIsFullscreen) {
+                    panX = Math.max(0, Math.round((baseW - vw) / 2));
+                    panY = Math.max(0, Math.round((baseH - vh) / 2));
+                }
+
+                lastIsFullscreen = true;
+                zoom = clamp(zoom || 1.0, minZoom, maxZoom);
+                applyTransform();
+                alignDividerToImage();
+                return;
+            }
+
+            // Leaving fullscreen: reset base sizing.
+            if (lastIsFullscreen && !isFullscreen) {
+                contentBaseW = 0;
+                contentBaseH = 0;
+                try {
+                    if (beforeContent) { beforeContent.style.width = ''; beforeContent.style.height = ''; }
+                    if (afterContent) { afterContent.style.width = ''; afterContent.style.height = ''; }
+                } catch (err) { /* ignore */ }
+            }
+
+            lastIsFullscreen = false;
+            contentBaseW = 0;
+            contentBaseH = 0;
+
+            view.style.width = '100%';
+
             var desiredHeight = (containerWidth && iw && ih)
                 ? Math.round((containerWidth * ih) / iw)
                 : Math.round(beforeImg.getBoundingClientRect().height) || Math.round(window.innerHeight * 0.5);
