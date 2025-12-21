@@ -26,6 +26,17 @@ body {
     flex-direction: column;
 }
 
+@media (min-width: 701px) and (min-aspect-ratio: 2/3) {
+    /* Desktop: keep content comfortably within the viewport.
+       Use a vw-based width and include padding in the element's width
+       to avoid horizontal overflow on narrower desktop windows. */
+    main {
+        width: min(900px, 92vw);
+        max-width: none;
+        box-sizing: border-box;
+    }
+}
+
 main {
     padding: 2rem;
     max-width: 900px;
@@ -163,6 +174,7 @@ header nav a.is-active {
 .md-content {
     margin: 0.75rem 0 1.25rem;
     line-height: 1.45;
+    overflow-wrap: anywhere;
 }
 
 /* A bit more breathing room directly under section titles */
@@ -256,6 +268,11 @@ header nav a.is-active {
 .container {
     display: grid;
     gap: 1rem;
+}
+
+/* Allow grid items to shrink (prevents long strings/URLs from causing horizontal overflow) */
+.container > * {
+    min-width: 0;
 }
 
 .hero {
