@@ -34,11 +34,22 @@
         } catch (e) { /* ignore */ }
     }
 
+    function findSectionAnchorById(id) {
+        try {
+            var nodes = document.querySelectorAll('.section-anchor[id]');
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i] && String(nodes[i].id) === String(id)) return nodes[i];
+            }
+        } catch (e) { /* ignore */ }
+        return null;
+    }
+
     function scrollToTarget() {
         var id = getTargetId();
         if (!id) return;
 
-        var el = document.getElementById(id);
+        // Prefer the actual section heading (in case some injected content ever creates duplicate ids).
+        var el = findSectionAnchorById(id) || document.getElementById(id);
         if (!el) return;
 
         try {
@@ -61,6 +72,22 @@
         scrollToTarget();
         window.setTimeout(scrollToTarget, 250);
         window.setTimeout(scrollToTarget, 750);
+
+        // Also respond to hash changes (e.g. in-page navigation).
+        window.addEventListener('hashchange', function () {
+            scrollToTarget();
+            window.setTimeout(scrollToTarget, 250);
+        });
+
+        // If markdown injection happens after initial load, re-run so the flash is visible
+        // even when layout shifts push the target around.
+        var mdTimer = 0;
+        document.addEventListener('md:injected', function () {
+            try { window.clearTimeout(mdTimer); } catch (e) { /* ignore */ }
+            mdTimer = window.setTimeout(function () {
+                scrollToTarget();
+            }, 60);
+        });
     }
 
     if (document.readyState === 'loading') {

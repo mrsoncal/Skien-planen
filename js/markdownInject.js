@@ -189,6 +189,15 @@
         });
 
         container.classList.add('md-loaded');
+
+        // Notify other scripts (e.g., hash scroll/flash) that layout may have shifted.
+        try {
+            if (typeof window.CustomEvent === 'function') {
+                document.dispatchEvent(new CustomEvent('md:injected', {
+                    detail: { id: headingEl.id || null, file: fileName || null }
+                }));
+            }
+        } catch (e) { /* ignore */ }
     }
 
     async function init() {
